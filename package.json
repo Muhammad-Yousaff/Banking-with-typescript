@@ -1,0 +1,15 @@
+{
+  "name": "banking",
+  "version": "1.0.0",
+  "description": "A banking app with typescript node.js and Iquirer",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Muhammad yousaf",
+  "license": "MIT",
+  "dependencies": {
+    "inquirer": "^12.2.0"
+  }
+}
