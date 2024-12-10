@@ -1,88 +1,3 @@
-// import inquirer  from "inquirer";
-// interface BankAccount{
-
-//  accountnumber:number;
-//  balance:number;
-//  withdraw(amount :number):void
-//  deposit(amount :number):void
-//  checkBalance():void
-// }
-// class BankAccount implements BankAccount{
-
-//     accountnumber: number;
-//     balance: number;
-
-//     constructor(accountnumber :number ,balance:number)
-//     {
-//         this.accountnumber=accountnumber;
-//         this.balance =balance;
-//     }
-   
-// withdraw(amount: number): void {
-//     if(this.balance>=amount)
-//     {
-//      this.balance-=amount;
-//     console.log(`withdrawal of $${amount} successful.Remaning balance $${this.balance} `)
-// }
-// else{
-
-//     console.log("insufficient balance,");
-// }
-
-// }
-// deposit(amount: number): void {
-    
-// if(amount> 100)
-// {
-//     amount -= 1;
-
-// }
-// this.balance+-amount;
-// console.log(`deposit of $${amount} successfully Remaning balance $${this.balance}` );
-// }
-// checkBalance(): void {
-//     console.log(this.balance)
-// }
-// }
-
-// class customer {
-
-//     firstName:string;
-//     lastname:string;
-//     age:number;
-//     gender:string;
-//     mobileNumber:number;
-//     accountNumber:number;
-//     balance:number;
-
-// constructor(firstName:string, lastname:string,age:number,gender:string,mobileNumber:number, accountNumber:number, balance:number,)
-
-// {
-//     this.firstName=firstName;
-//     this.lastname=lastname;
-//     this.accountNumber=accountNumber;
-//     this.age=age;
-//     this.gender=gender;
-//      this.mobileNumber=mobileNumber;
-//      this.balance=balance;
-
-// }
-
-// }
-
-// const account:BankAccount[]=[
-
-// new BankAccount (1001,100),
-// new BankAccount (1001,100),
-// new BankAccount (1001,100),
-
-// ]
-// const customer:customer[]=[
-
-// new customer("yousaf","saeed",20,"male",03030034456,accountnumber[0],100000)
-
-
-// ]
 import inquirer from "inquirer";
 
 interface BankAccount {
@@ -93,7 +8,7 @@ interface BankAccount {
     checkBalance(): void;
 }
 
-class BankAccountClass implements BankAccount {
+class BankAccountClass implements BankAccount { // Renamed class to avoid conflict with interface name
     accountnumber: number;
     balance: number;
 
@@ -113,47 +28,104 @@ class BankAccountClass implements BankAccount {
 
     deposit(amount: number): void {
         if (amount > 100) {
-            amount -= 1; // Deduct a small fee for large deposits
+            amount -= 1; // Deducting a small fee for large deposits
         }
         this.balance += amount;
         console.log(`Deposit of $${amount} successful. Remaining balance: $${this.balance}`);
     }
 
     checkBalance(): void {
-        console.log(`Account balance: $${this.balance}`);
+        console.log(`Current balance: $${this.balance}`);
     }
 }
 
-class Customer {
+class Customer { // Renamed class to avoid conflict with variable name `customer`
     firstName: string;
     lastName: string;
     age: number;
     gender: string;
     mobileNumber: number;
     accountNumber: number;
-    balance: number;
+    account: BankAccount; // Reference to BankAccount object
 
-    constructor(firstName: string, lastName: string, age: number, gender: string, mobileNumber: number, accountNumber: number, balance: number) {
+    constructor(firstName: string, lastName: string, age: number, gender: string, mobileNumber: number, accountNumber: number, account: BankAccount) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
         this.gender = gender;
         this.mobileNumber = mobileNumber;
         this.accountNumber = accountNumber;
-        this.balance = balance;
+        this.account = account;
     }
 }
 
+// Fixed `account` and `customer` initialization
 const accounts: BankAccount[] = [
     new BankAccountClass(1001, 100),
     new BankAccountClass(1002, 200),
-    new BankAccountClass(1003, 300)
+    new BankAccountClass(1003, 300),
 ];
 
 const customers: Customer[] = [
-    new Customer("Yousaf", "Saeed", 20, "Male", 3030034456, accounts[0].accountnumber, 100000)
+    new Customer("Ali", "Usman", 21, "Male", 3030034456, 1001, accounts[0]),
+    new Customer("Adeel", "Arshad", 22, "Male", 3030034457, 1002, accounts[1]),
+    new Customer("Yousaf", "Saeed", 20, "Male", 3030034458, 1003, accounts[2]),
 ];
 
+// Main function that runs the banking service
+async function service() {
+    let exit = false;
+    do {
+        const accountNumberInput = await inquirer.prompt({
+            name: "accountnumber",
+            type: "number",
+            message: "Enter your account number:",
+        });
 
-// Example: Access the account and perform a withdrawal
-accounts[0].withdraw(50); // Withdrawal of $50 from account 1001
+        // Find the customer by account number
+        const customer = customers.find((customer) => customer.accountNumber === accountNumberInput.accountnumber);
+
+        if (customer) {
+            console.log(`Welcome, ${customer.firstName} ${customer.lastName}!\n`);
+            const ans = await inquirer.prompt([{
+                name: "select",
+                type: "list",
+                message: "Select an Option",
+                choices: ["Deposit", "Withdraw", "Check Balance", "Exit"],
+            }]);
+
+            switch (ans.select) {
+                case "Deposit":
+                    const depositAmount = await inquirer.prompt({
+                        name: "amount",
+                        type: "number",
+                        message: "Enter the amount to deposit:",
+                    });
+                    customer.account.deposit(depositAmount.amount); // Deposit functionality
+                    break;
+
+                case "Withdraw":
+                    const withdrawAmount = await inquirer.prompt({
+                        name: "amount",
+                        type: "number",
+                        message: "Enter the amount to withdraw:",
+                    });
+                    customer.account.withdraw(withdrawAmount.amount); // Withdraw functionality
+                    break;
+
+                case "Check Balance":
+                    customer.account.checkBalance(); // Check balance functionality
+                    break;
+
+                case "Exit":
+                    exit = true; // Exit the service
+                    console.log("Thank you for using the service!");
+                    break;
+            }
+        } else {
+            console.log("Account not found. Please check your account number.");
+        }
+    } while (!exit); // Loop until the user chooses to exit
+}
+
+service(); // Start the banking service
